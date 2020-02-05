@@ -4,7 +4,6 @@ import UIKit
 struct Users: Decodable
 {
     var id:Int
-    var contact: String
     var is_verified: Int
     var name: String
     var teams_count: Int
@@ -15,10 +14,9 @@ struct Users: Decodable
 //        name = json["name"] as? String ?? ""
 //        description = json["description"] as? String ?? ""
 //    }
-    init(id: Int, contact: String,is_verified: Int,name: String, teams_count: Int, username: String)
+    init(id: Int,is_verified: Int,name: String, teams_count: Int, username: String)
     {
         self.id = id
-        self.contact = contact
         self.is_verified = is_verified
         self.name = name
         self.teams_count = teams_count
@@ -32,8 +30,8 @@ class TeamsListViewController: UIViewController
     
     @IBOutlet weak var tableView: UITableView!
 
-    var teamData: [Users] = []
-    var tempUserObj: Users = Users(id: 1, contact: "1234567890", is_verified: 1, name: "user1", teams_count: 1, username: "user1@test.com")
+    var teamData: Users = Users(id: 1, is_verified: 1, name: "user1", teams_count: 1, username: "user1@test.com")
+    var tempUserObj: Users = Users(id: 1, is_verified: 1, name: "user1", teams_count: 1, username: "user1@test.com")
 
  
     override func viewDidLoad() {
@@ -53,7 +51,7 @@ class TeamsListViewController: UIViewController
         //let userid = UserDefaults.standard.value(forKey: "userid") as! Int
         let username = "user1@test.com"
         let password = "password"
-        let jsonUrl = "https://jedi-taskmanager.herokuapp.com/api/v1/accounts/login"
+        let jsonUrl = "https://jedi-taskmanager.herokuapp.com/api/v1/accounts/login?only=contact,id,name,username,teams_count,is_verified"
        
         guard let url = URL(string: jsonUrl) else {
             return
@@ -67,7 +65,7 @@ class TeamsListViewController: UIViewController
                
                
         //Make the request with URLSessionDataTask, send data to webserver
-        let task = URLSession.shared.dataTask(with: url) { data,response,error in
+        let task = URLSession.shared.dataTask(with: request as URLRequest) { data,response,error in
         print(data)
            
         print(response)
@@ -75,25 +73,24 @@ class TeamsListViewController: UIViewController
             guard let data = data else { return }
             print(data)
             do {
-                let teams = try JSONDecoder().decode([Users].self, from: data)
-                print(teams)
+                let team = try JSONDecoder().decode(Users.self, from: data)
+                print(team)
                 
-            for team in teams {
+            //for team in teams {
                 let name_1 = team.name
                 let username_1 = team.username
                 let id_1 = team.id
-                let contact_1 = team.contact
+               
                 let teams_count_1 = team.teams_count
                 let is_verified_1 = team.is_verified
                // (id: Int, contact: String,is_verified: Int,name: String, teams_count: Int, username: String)
                 let teamObj = Users(id: id_1,
-                                    contact: contact_1,
                                     is_verified: is_verified_1,
                                     name: name_1,
                                     teams_count: teams_count_1,
                                     username: username_1)
-                self.teamData.append(teamObj)
-            }
+                self.teamData = teamObj
+          //  }
             //check if error is nil or not
             if error != nil {
                // self.handleClientError(error)
@@ -135,12 +132,12 @@ extension TeamsListViewController: UITableViewDataSource,UITableViewDelegate
     
      func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
         {
-                return teamData.count
+                return 1
         }
             
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
         {
-            let eachteamData = teamData[indexPath.row]
+            let eachteamData = teamData
             let cell = tableView.dequeueReusableCell(withIdentifier: "EachTeamCell") as! EachTeamCell
             
             cell.setTeamData(eachteamData: eachteamData)
@@ -150,7 +147,7 @@ extension TeamsListViewController: UITableViewDataSource,UITableViewDelegate
         func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
         {
             print("===============!!!!")
-            self.tempUserObj = teamData[indexPath.row]
+            self.tempUserObj = teamData
             
             print(self.tempUserObj)
             self.performSegue(withIdentifier: "segue2", sender: self)
