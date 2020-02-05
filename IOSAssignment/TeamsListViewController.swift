@@ -67,7 +67,7 @@ class TeamsListViewController: UIViewController
                
                
         //Make the request with URLSessionDataTask, send data to webserver
-        let task = URLSession.shared.dataTask(with: url) { data,response,error in
+        let task = URLSession.shared.dataTask(with: request as URLRequest) { data,response,error in
         print(data)
            
         print(response)
